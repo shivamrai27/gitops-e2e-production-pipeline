@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: complete-production-e2e-deplioyment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: complete-production-e2e
+  template:
+    metadata:
+      labels:
+        app: complete-production-e2e
+    spec:
+      containers:
+      - name: complete-production-e2e-app
+        image: shivamrai27/cid-cd-pipeline-proj:1.0.0-15
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
