@@ -24,12 +24,12 @@ pipeline {
         stage("Update the Deployment Tags") {
             steps {
                 sh """
-                    echo "Before update:"
+  
                     cat deployment.yaml || echo "deployment.yaml not found!"
 
-                    sed -i 's|${APP_NAME}:.*|${APP_NAME}:${IMAGE_TAG}|g' deployment.yaml
+                    sed -i 's/${APP_NAME}.*/${APP_NAME}:${IMAGE_TAG}/g' deployment.yaml
 
-                    echo "After update:"
+                    
                     cat deployment.yaml
                 """
             }
@@ -42,6 +42,7 @@ pipeline {
                     git config --global user.email "200shivamrai@gmail.com"
                     git add deployment.yaml || echo "Nothing to add"
                     git commit -m "Updated Deployment Manifest" || echo "No changes to commit"
+                    
                     git push https://github.com/shivamrai27/gitops-e2e-production-pipeline.git main || echo "Push skipped or failed (no auth)"
                 """
             }
