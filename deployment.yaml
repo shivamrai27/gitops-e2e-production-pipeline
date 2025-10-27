@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: complete-production-e2e-app
-        image: shivamrai27/cid-cd-pipeline-proj:1.0.0-15
+        image: shivamrai27/cid-cd-pipeline-proj:1.0.0-37
         resources:
           limits:
             memory: "256Mi"
