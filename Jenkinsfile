@@ -23,13 +23,9 @@ pipeline {
 
         stage("Update the Deployment Tags") {
             steps {
-                sh """
-  
+                sh """  
                     cat deployment.yaml || echo "deployment.yaml not found!"
-
                     sed -i 's/${APP_NAME}.*/${APP_NAME}:${IMAGE_TAG}/g' deployment.yaml
-
-                    
                     cat deployment.yaml
                 """
             }
