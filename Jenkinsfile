@@ -4,7 +4,8 @@ pipeline {
     }
 
     environment {
-        APP_NAME = "complete-production-e2e-pipeline"
+        APP_NAME = "cid-cd-pipeline-proj"
+        GITHUB_TOKEN = credentials('GITHUB_TOKEN')  
     }
 
     stages {
@@ -24,9 +25,20 @@ pipeline {
         stage("Update the Deployment Tags") {
             steps {
                 sh """  
-                    cat deployment.yaml || echo "deployment.yaml not found!"
-                    sed -i 's/${APP_NAME}.*/${APP_NAME}:${IMAGE_TAG}/g' deployment.yaml
+                    echo "=== BEFORE UPDATE ==="
                     cat deployment.yaml
+                    
+                    echo ""
+                    echo "=== UPDATING IMAGE TAG TO: ${IMAGE_TAG} ==="
+                    sed -i 's|image: shivamrai27/${APP_NAME}:.*|image: shivamrai27/${APP_NAME}:${IMAGE_TAG}|g' deployment.yaml
+                    
+                    echo ""
+                    echo "=== AFTER UPDATE ==="
+                    cat deployment.yaml
+                    
+                    echo ""
+                    echo "=== CHANGES MADE ==="
+                    git diff deployment.yaml
                 """
             }
         }
@@ -34,14 +46,34 @@ pipeline {
         stage("Push the changed deployment file to Git") {
             steps {
                 sh """
-                    git config --global user.name "shivamrai27"
-                    git config --global user.email "200shivamrai@gmail.com"
-                    git add deployment.yaml || echo "Nothing to add"
-                    git commit -m "Updated Deployment Manifest" || echo "No changes to commit"
+                    git config user.name "shivamrai27"
+                    git config user.email "200shivamrai@gmail.com"
                     
-                    git push https://github.com/shivamrai27/gitops-e2e-production-pipeline.git main || echo "Push skipped or failed (no auth)"
+                    git add deployment.yaml
+                    
+                    if git diff --staged --quiet; then
+                        echo "⚠️ No changes detected"
+                        exit 0
+                    fi
+                    
+                    git commit -m "Updated Deployment Manifest to ${IMAGE_TAG}"
+                    git push https://shivamrai27:${GITHUB_TOKEN}@github.com/shivamrai27/gitops-e2e-production-pipeline.git main
+                    
+                    echo "✅ Successfully pushed changes to GitHub"
                 """
             }
+        }
+    }
+    
+    post {
+        success {
+            echo "✅ Deployment updated successfully to ${IMAGE_TAG}"
+        }
+        failure {
+            echo "❌ Pipeline failed"
+        }
+        always {
+            cleanWs()
         }
     }
 }
